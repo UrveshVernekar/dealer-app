@@ -5,8 +5,16 @@ import api from "@/app/lib/api";
 import { DynamicDataTable } from "@/components/dynamic-data-table";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Database, Download, Loader2, AlertCircle, RefreshCw } from "lucide-react";
 import { cn } from "@/lib/utils";
+
 
 export default function DataExplorerPage() {
   const [tablesList, setTablesList] = useState<string[]>([]);
@@ -175,17 +183,21 @@ export default function DataExplorerPage() {
               </div>
             ) : (
               <div className="w-full max-w-xs">
-                <select
+                <Select
                   value={selectedTable}
-                  onChange={(e) => setSelectedTable(e.target.value)}
-                  className="w-full bg-background border border-border rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500 transition-all font-semibold text-sm cursor-pointer"
+                  onValueChange={(val) => setSelectedTable(val)}
                 >
-                  {tablesList.map((t) => (
-                    <option key={t} value={t}>
-                      {formatTableHeaderLabel(t)} ({t})
-                    </option>
-                  ))}
-                </select>
+                  <SelectTrigger className="w-full bg-background border border-border rounded-xl px-4 py-3 h-12 text-sm font-semibold outline-none focus:ring-2 focus:ring-blue-500 transition-all text-left">
+                    <SelectValue placeholder="Select Table" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-card border border-border">
+                    {tablesList.map((t) => (
+                      <SelectItem key={t} value={t}>
+                        {formatTableHeaderLabel(t)} ({t})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             )}
           </CardContent>

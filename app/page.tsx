@@ -5,6 +5,13 @@ import api from "@/app/lib/api";
 import { useDropzone } from "react-dropzone";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { UploadCloud, CheckCircle2, AlertCircle, FileSpreadsheet, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -15,6 +22,7 @@ export default function Home() {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadStatus, setUploadStatus] = useState<"idle" | "success" | "error">("idle");
   const [uploadResult, setUploadResult] = useState<any>(null);
+
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     if (acceptedFiles.length > 0) {
@@ -96,31 +104,39 @@ export default function Home() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-zinc-50 dark:bg-zinc-950 rounded-2xl border border-zinc-150 dark:border-zinc-850">
               <div className="space-y-2">
                 <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Sales Report Year</label>
-                <select
-                  value={year}
-                  onChange={(e) => setYear(parseInt(e.target.value))}
-                  className="w-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500 transition-all font-medium"
+                <Select
+                  value={year.toString()}
+                  onValueChange={(val) => setYear(parseInt(val))}
                 >
-                  <option value={2024}>2024</option>
-                  <option value={2025}>2025</option>
-                  <option value={2026}>2026</option>
-                  <option value={2027}>2027</option>
-                  <option value={2028}>2028</option>
-                </select>
+                  <SelectTrigger className="w-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl px-4 py-3 h-12 text-sm font-semibold outline-none focus:ring-2 focus:ring-blue-500 transition-all text-left">
+                    <SelectValue placeholder="Select Year" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-card border border-border">
+                    <SelectItem value="2024">2024</SelectItem>
+                    <SelectItem value="2025">2025</SelectItem>
+                    <SelectItem value="2026">2026</SelectItem>
+                    <SelectItem value="2027">2027</SelectItem>
+                    <SelectItem value="2028">2028</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
 
               <div className="space-y-2">
                 <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Sales Report Quarter</label>
-                <select
+                <Select
                   value={quarter}
-                  onChange={(e) => setQuarter(e.target.value)}
-                  className="w-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500 transition-all font-medium"
+                  onValueChange={(val) => setQuarter(val)}
                 >
-                  <option value="Q1">Q1 (April - June)</option>
-                  <option value="Q2">Q2 (July - September)</option>
-                  <option value="Q3">Q3 (October - December)</option>
-                  <option value="Q4">Q4 (January - March)</option>
-                </select>
+                  <SelectTrigger className="w-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl px-4 py-3 h-12 text-sm font-semibold outline-none focus:ring-2 focus:ring-blue-500 transition-all text-left">
+                    <SelectValue placeholder="Select Quarter" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-card border border-border">
+                    <SelectItem value="Q1">Q1 (April - June)</SelectItem>
+                    <SelectItem value="Q2">Q2 (July - September)</SelectItem>
+                    <SelectItem value="Q3">Q3 (October - December)</SelectItem>
+                    <SelectItem value="Q4">Q4 (January - March)</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
 
