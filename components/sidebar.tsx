@@ -36,6 +36,11 @@ export function Sidebar() {
       href: "/",
       icon: LayoutDashboard,
     },
+    {
+      name: "Data Explorer",
+      href: "/data-explorer",
+      icon: Inbox,
+    },
     ...(user?.role === "admin" ? [
       {
         name: "Manage Users",
@@ -44,6 +49,7 @@ export function Sidebar() {
       }
     ] : []),
   ];
+
 
 
   return (
