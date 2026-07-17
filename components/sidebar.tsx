@@ -41,6 +41,11 @@ export function Sidebar() {
       href: "/data-explorer",
       icon: Inbox,
     },
+    {
+      name: "Scheme Outcomes",
+      href: "/outcomes",
+      icon: BarChart2,
+    },
     ...(user?.role === "admin" ? [
       {
         name: "Manage Users",
