@@ -3,7 +3,13 @@
 import { useState, useCallback } from "react";
 import api from "@/app/lib/api";
 import { useDropzone } from "react-dropzone";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -12,7 +18,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { UploadCloud, CheckCircle2, AlertCircle, FileSpreadsheet, Loader2 } from "lucide-react";
+import {
+  UploadCloud,
+  CheckCircle2,
+  AlertCircle,
+  FileSpreadsheet,
+  Loader2,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export default function Home() {
@@ -20,9 +32,10 @@ export default function Home() {
   const [year, setYear] = useState<number>(new Date().getFullYear());
   const [quarter, setQuarter] = useState<string>("Q1");
   const [isUploading, setIsUploading] = useState(false);
-  const [uploadStatus, setUploadStatus] = useState<"idle" | "success" | "error">("idle");
+  const [uploadStatus, setUploadStatus] = useState<
+    "idle" | "success" | "error"
+  >("idle");
   const [uploadResult, setUploadResult] = useState<any>(null);
-
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     if (acceptedFiles.length > 0) {
@@ -35,11 +48,16 @@ export default function Home() {
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: {
-      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": [".xlsx"],
-      "application/vnd.ms-excel": [".xls"]
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": [
+        ".xlsx",
+      ],
+      "application/vnd.ms-excel": [".xls"],
+      "application/vnd.ms-excel.sheet.binary.macroEnabled.12": [".xlsb"],
+      "application/octet-stream": [".xlsb"],
     },
     maxFiles: 1,
   });
+
 
   const handleUpload = async () => {
     if (!file) return;
@@ -54,27 +72,27 @@ export default function Home() {
     formData.append("quarter", quarter);
 
     try {
-      const res = await api.post(`/import/upload`, formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
-      
+      // Axios automatically sets multipart/form-data WITH the correct boundary string
+      const res = await api.post(`/import/upload`, formData);
+
       setUploadResult(res.data);
       setUploadStatus("success");
     } catch (err: any) {
       console.error(err);
-      setUploadResult({ message: err.response?.data?.detail || "An unexpected error occurred during import." });
+      setUploadResult({
+        message:
+          err.response?.data?.detail ||
+          "An unexpected error occurred during import.",
+      });
       setUploadStatus("error");
     } finally {
       setIsUploading(false);
     }
-  };
+};
 
   return (
     <div className="min-h-[calc(100vh-64px)] bg-gray-50/70 dark:bg-zinc-950 p-4 md:p-6 lg:p-8 font-sans">
       <div className="max-w-3xl mx-auto space-y-6">
-
         {/* HEADER */}
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-700 flex items-center justify-center shadow-lg shadow-blue-500/20">
@@ -85,7 +103,8 @@ export default function Home() {
               Dealer Schemes Data Import
             </h1>
             <p className="text-muted-foreground mt-1 text-sm">
-              Upload dealer data spreadsheets (e.g. testData.xlsx) to populate tables in PostgreSQL.
+              Upload dealer data spreadsheets (e.g. testData.xlsx) to populate
+              tables in PostgreSQL.
             </p>
           </div>
         </div>
@@ -95,15 +114,17 @@ export default function Home() {
           <CardHeader>
             <CardTitle className="text-xl">Import excel file</CardTitle>
             <CardDescription className="text-sm mt-1">
-              Select the context details (Year & Quarter) below. They will be appended automatically to the parsed `sale-report` data rows.
+              Select the context details (Year & Quarter) below. They will be
+              appended automatically to the parsed `sale-report` data rows.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
-
             {/* YEAR & QUARTER SELECTORS */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-zinc-50 dark:bg-zinc-950 rounded-2xl border border-zinc-150 dark:border-zinc-850">
               <div className="space-y-2">
-                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Sales Report Year</label>
+                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                  Sales Report Year
+                </label>
                 <Select
                   value={year.toString()}
                   onValueChange={(val) => setYear(parseInt(val))}
@@ -122,7 +143,9 @@ export default function Home() {
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Sales Report Quarter</label>
+                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                  Sales Report Quarter
+                </label>
                 <Select
                   value={quarter}
                   onValueChange={(val) => setQuarter(val)}
@@ -145,20 +168,29 @@ export default function Home() {
               {...getRootProps()}
               className={cn(
                 "border-2 border-dashed rounded-2xl p-10 flex flex-col items-center justify-center text-center cursor-pointer transition-all",
-                isDragActive ? "border-blue-500 bg-blue-50/55 dark:bg-blue-900/20" : "border-zinc-200 hover:border-blue-400 hover:bg-muted/50 dark:border-zinc-800",
-                file && "border-blue-500 bg-blue-50/20 dark:bg-blue-900/10"
+                isDragActive
+                  ? "border-blue-500 bg-blue-50/55 dark:bg-blue-900/20"
+                  : "border-zinc-200 hover:border-blue-400 hover:bg-muted/50 dark:border-zinc-800",
+                file && "border-blue-500 bg-blue-50/20 dark:bg-blue-900/10",
               )}
             >
-              <input {...getInputProps()} />
-
+              <input
+                {...getInputProps({
+                  accept: ".xlsx, .xls, .xlsb",
+                })}
+              />
               {file ? (
                 <div className="flex flex-col items-center gap-3">
                   <div className="w-14 h-14 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
                     <FileSpreadsheet className="w-7 h-7 text-emerald-600 dark:text-emerald-400" />
                   </div>
                   <div>
-                    <p className="font-semibold text-lg text-foreground">{file.name}</p>
-                    <p className="text-sm text-muted-foreground mt-0.5">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
+                    <p className="font-semibold text-lg text-foreground">
+                      {file.name}
+                    </p>
+                    <p className="text-sm text-muted-foreground mt-0.5">
+                      {(file.size / 1024 / 1024).toFixed(2)} MB
+                    </p>
                   </div>
                   <p className="text-sm text-blue-600 dark:text-blue-400 mt-2 hover:underline">
                     Click or drag to change file
@@ -170,8 +202,12 @@ export default function Home() {
                     <UploadCloud className="w-7 h-7" />
                   </div>
                   <div>
-                    <p className="font-semibold text-base text-foreground">Click to upload or drag and drop</p>
-                    <p className="text-sm mt-0.5">Excel file with sheet structures</p>
+                    <p className="font-semibold text-base text-foreground">
+                      Click to upload or drag and drop
+                    </p>
+                    <p className="text-sm mt-0.5">
+                      Excel file (.xlsx, .xls, .xlsb) with sheet structures
+                    </p>
                   </div>
                 </div>
               )}
@@ -181,7 +217,11 @@ export default function Home() {
             <div className="flex items-center justify-between pt-2">
               <Button
                 variant="outline"
-                onClick={() => { setFile(null); setUploadStatus("idle"); setUploadResult(null); }}
+                onClick={() => {
+                  setFile(null);
+                  setUploadStatus("idle");
+                  setUploadResult(null);
+                }}
                 disabled={!file || isUploading}
                 className="py-5 px-6 rounded-xl font-medium"
               >
@@ -211,16 +251,26 @@ export default function Home() {
               <div className="p-5 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900 flex gap-3 items-start shadow-sm">
                 <CheckCircle2 className="w-6 h-6 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
                 <div className="space-y-2">
-                  <h4 className="font-bold text-emerald-800 dark:text-emerald-300 text-base">Import Successful</h4>
+                  <h4 className="font-bold text-emerald-800 dark:text-emerald-300 text-base">
+                    Import Successful
+                  </h4>
                   <p className="text-sm text-emerald-700 dark:text-emerald-400/80">
                     {uploadResult.message} Detailed tables processed:
                   </p>
                   <ul className="text-xs space-y-1.5 text-emerald-800/90 dark:text-emerald-400/70 list-disc list-inside">
-                    {Object.entries(uploadResult.details || {}).map(([sheet, details]: [string, any]) => (
-                      <li key={sheet}>
-                        <span className="font-semibold">{sheet}</span> &rarr; Table <code className="bg-emerald-100/50 dark:bg-emerald-900/35 px-1.5 py-0.5 rounded">{details.table_name}</code> ({details.rows_inserted} rows, {details.columns.length} columns)
-                      </li>
-                    ))}
+                    {Object.entries(uploadResult.details || {}).map(
+                      ([sheet, details]: [string, any]) => (
+                        <li key={sheet}>
+                          <span className="font-semibold">{sheet}</span> &rarr;
+                          Table{" "}
+                          <code className="bg-emerald-100/50 dark:bg-emerald-900/35 px-1.5 py-0.5 rounded">
+                            {details.table_name}
+                          </code>{" "}
+                          ({details.rows_inserted} rows,{" "}
+                          {details.columns.length} columns)
+                        </li>
+                      ),
+                    )}
                   </ul>
                 </div>
               </div>
@@ -230,14 +280,16 @@ export default function Home() {
               <div className="p-5 rounded-2xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900 flex gap-3 items-start shadow-sm">
                 <AlertCircle className="w-6 h-6 text-red-600 dark:text-red-400 shrink-0 mt-0.5" />
                 <div>
-                  <h4 className="font-bold text-red-800 dark:text-red-300 text-base">Import Failed</h4>
+                  <h4 className="font-bold text-red-800 dark:text-red-300 text-base">
+                    Import Failed
+                  </h4>
                   <p className="text-sm text-red-700 dark:text-red-400/80 mt-1">
-                    {uploadResult.message || "File upload failed. Ensure the server is running."}
+                    {uploadResult.message ||
+                      "File upload failed. Ensure the server is running."}
                   </p>
                 </div>
               </div>
             )}
-
           </CardContent>
         </Card>
       </div>
