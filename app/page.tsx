@@ -97,7 +97,6 @@ export default function Home() {
     maxFiles: 1,
   });
 
-
   const handleUpload = async () => {
     if (!file) return;
 
@@ -111,7 +110,6 @@ export default function Home() {
     formData.append("quarter", quarter);
 
     try {
-      // Axios automatically sets multipart/form-data WITH the correct boundary string
       const res = await api.post(`/import/upload`, formData);
 
       setUploadResult(res.data);
@@ -214,573 +212,567 @@ export default function Home() {
 
   return (
     <div className="min-h-[calc(100vh-64px)] bg-gray-50/70 dark:bg-zinc-950 p-4 md:p-6 lg:p-8 font-sans">
-      <div className="max-w-3xl mx-auto space-y-6">
-        {/* HEADER */}
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-700 flex items-center justify-center shadow-lg shadow-blue-500/20">
-            <UploadCloud className="w-5 h-5 text-white" />
+      <div className="max-w-7xl mx-auto space-y-8">
+        {/* Main Dashboard Header */}
+        <div className="flex items-center gap-4 border-b border-zinc-200 dark:border-zinc-800 pb-6">
+          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-750 flex items-center justify-center shadow-lg shadow-blue-500/20">
+            <UploadCloud className="w-6 h-6 text-white" />
           </div>
           <div>
-            <h1 className="text-3xl font-bold tracking-tight text-foreground">
-              Actual Sale Data Import Previous Year (Quarterly)
+            <h1 className="text-3xl font-extrabold tracking-tight text-foreground bg-clip-text text-transparent bg-gradient-to-r from-zinc-900 to-zinc-600 dark:from-white dark:to-zinc-400">
+              Data Ingestion Dashboard
             </h1>
             <p className="text-muted-foreground mt-1 text-sm">
-              Upload dealer data spreadsheets (e.g. testData.xlsx) to populate
-              tables in PostgreSQL.
+              Upload spreadsheets to populate dealer sales report, monthly sales data, and sales targets in PostgreSQL.
             </p>
           </div>
         </div>
 
-        {/* DATA IMPORT CARD */}
-        <Card className="shadow-xl border border-white/60 dark:border-zinc-800 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-2xl">
-          <CardHeader>
-            <CardTitle className="text-xl">Import excel file</CardTitle>
-            <CardDescription className="text-sm mt-1">
-              Select the context details (Year & Quarter) below. They will be
-              appended automatically to the parsed `sale-report` data rows.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            {/* YEAR & QUARTER SELECTORS */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-zinc-50 dark:bg-zinc-950 rounded-2xl border border-zinc-150 dark:border-zinc-850">
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
-                  Sales Report Year
-                </label>
-                <Select
-                  value={previousYear.toString()}
-                  onValueChange={(val) => setPreviousYear(parseInt(val))}
-                >
-                  <SelectTrigger className="w-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl px-4 py-3 h-12 text-sm font-semibold outline-none focus:ring-2 focus:ring-blue-500 transition-all text-left">
-                    <SelectValue placeholder="Select Year" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-card border border-border">
-                    <SelectItem value="2024">2024</SelectItem>
-                    <SelectItem value="2025">2025</SelectItem>
-                    <SelectItem value="2026">2026</SelectItem>
-                    <SelectItem value="2027">2027</SelectItem>
-                    <SelectItem value="2028">2028</SelectItem>
-                  </SelectContent>
-                </Select>
+        {/* 2-Column Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+          {/* SECTION 1: QUARTERLY DATA IMPORT */}
+          <div className="space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-700 flex items-center justify-center shadow-lg shadow-blue-500/20">
+                <UploadCloud className="w-5 h-5 text-white" />
               </div>
-
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
-                  Sales Report Quarter
-                </label>
-                <Select
-                  value={quarter}
-                  onValueChange={(val) => setQuarter(val)}
-                >
-                  <SelectTrigger className="w-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl px-4 py-3 h-12 text-sm font-semibold outline-none focus:ring-2 focus:ring-blue-500 transition-all text-left">
-                    <SelectValue placeholder="Select Quarter" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-card border border-border">
-                    <SelectItem value="Q1">Q1 (April - June)</SelectItem>
-                    <SelectItem value="Q2">Q2 (July - September)</SelectItem>
-                    <SelectItem value="Q3">Q3 (October - December)</SelectItem>
-                    <SelectItem value="Q4">Q4 (January - March)</SelectItem>
-                  </SelectContent>
-                </Select>
+              <div>
+                <h2 className="text-xl font-bold tracking-tight text-foreground">
+                  Actual Sale Data Import (Quarterly)
+                </h2>
+                <p className="text-muted-foreground text-xs mt-0.5">
+                  Populate historical quarterly sales records.
+                </p>
               </div>
             </div>
 
-            {/* DROPZONE */}
-            <div
-              {...getRootProps()}
-              className={cn(
-                "border-2 border-dashed rounded-2xl p-10 flex flex-col items-center justify-center text-center cursor-pointer transition-all",
-                isDragActive
-                  ? "border-blue-500 bg-blue-50/55 dark:bg-blue-900/20"
-                  : "border-zinc-200 hover:border-blue-400 hover:bg-muted/50 dark:border-zinc-800",
-                file && "border-blue-500 bg-blue-50/20 dark:bg-blue-900/10",
-              )}
-            >
-              <input
-                {...getInputProps({
-                  accept: ".xlsx, .xls, .xlsb",
-                })}
-              />
-              {file ? (
-                <div className="flex flex-col items-center gap-3">
-                  <div className="w-14 h-14 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
-                    <FileSpreadsheet className="w-7 h-7 text-emerald-600 dark:text-emerald-400" />
+            <Card className="shadow-xl border border-white/60 dark:border-zinc-800 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-2xl">
+              <CardHeader className="pb-4">
+                <CardTitle className="text-lg">Import excel file</CardTitle>
+                <CardDescription className="text-xs">
+                  Select Context Details (Year & Quarter) to be appended to parsed sale-report rows.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-5">
+                {/* YEAR & QUARTER SELECTORS */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3 bg-zinc-50 dark:bg-zinc-950 rounded-xl border border-zinc-150 dark:border-zinc-850">
+                  <div className="space-y-1">
+                    <label className="text-xs font-semibold text-zinc-650 dark:text-zinc-400">
+                      Sales Report Year
+                    </label>
+                    <Select
+                      value={previousYear.toString()}
+                      onValueChange={(val) => setPreviousYear(parseInt(val))}
+                    >
+                      <SelectTrigger className="w-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg px-3 py-2 h-10 text-xs font-semibold outline-none text-left">
+                        <SelectValue placeholder="Select Year" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-card border border-border">
+                        <SelectItem value="2024">2024</SelectItem>
+                        <SelectItem value="2025">2025</SelectItem>
+                        <SelectItem value="2026">2026</SelectItem>
+                        <SelectItem value="2027">2027</SelectItem>
+                        <SelectItem value="2028">2028</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
-                  <div>
-                    <p className="font-semibold text-lg text-foreground">
-                      {file.name}
-                    </p>
-                    <p className="text-sm text-muted-foreground mt-0.5">
-                      {(file.size / 1024 / 1024).toFixed(2)} MB
-                    </p>
-                  </div>
-                  <p className="text-sm text-blue-600 dark:text-blue-400 mt-2 hover:underline">
-                    Click or drag to change file
-                  </p>
-                </div>
-              ) : (
-                <div className="flex flex-col items-center gap-4 text-muted-foreground">
-                  <div className="w-14 h-14 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center">
-                    <UploadCloud className="w-7 h-7" />
-                  </div>
-                  <div>
-                    <p className="font-semibold text-base text-foreground">
-                      Click to upload or drag and drop
-                    </p>
-                    <p className="text-sm mt-0.5">
-                      Excel file (.xlsx, .xls, .xlsb) with sheet structures
-                    </p>
-                  </div>
-                </div>
-              )}
-            </div>
 
-            {/* ACTIONS */}
-            <div className="flex items-center justify-between pt-2">
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setFile(null);
-                  setUploadStatus("idle");
-                  setUploadResult(null);
-                }}
-                disabled={!file || isUploading}
-                className="py-5 px-6 rounded-xl font-medium"
-              >
-                Clear
-              </Button>
-              <Button
-                onClick={handleUpload}
-                disabled={!file || isUploading}
-                className="py-5 px-6 rounded-xl font-semibold bg-blue-600 hover:bg-blue-700 shadow-md shadow-blue-500/15"
-              >
-                {isUploading ? (
-                  <>
-                    <Loader2 className="w-5 h-5 animate-spin mr-2" />
-                    Uploading & Parsing...
-                  </>
-                ) : (
-                  <div className="flex items-center gap-2 text-white font-semibold">
-                    <UploadCloud className="w-5 h-5" />
-                    <span>Upload & Store Data</span>
+                  <div className="space-y-1">
+                    <label className="text-xs font-semibold text-zinc-650 dark:text-zinc-400">
+                      Sales Report Quarter
+                    </label>
+                    <Select
+                      value={quarter}
+                      onValueChange={(val) => setQuarter(val)}
+                    >
+                      <SelectTrigger className="w-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg px-3 py-2 h-10 text-xs font-semibold outline-none text-left">
+                        <SelectValue placeholder="Select Quarter" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-card border border-border">
+                        <SelectItem value="Q1">Q1 (April - June)</SelectItem>
+                        <SelectItem value="Q2">Q2 (July - September)</SelectItem>
+                        <SelectItem value="Q3">Q3 (October - December)</SelectItem>
+                        <SelectItem value="Q4">Q4 (January - March)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                {/* DROPZONE */}
+                <div
+                  {...getRootProps()}
+                  className={cn(
+                    "border-2 border-dashed rounded-xl p-8 flex flex-col items-center justify-center text-center cursor-pointer transition-all",
+                    isDragActive
+                      ? "border-blue-500 bg-blue-50/55 dark:bg-blue-900/20"
+                      : "border-zinc-200 hover:border-blue-400 hover:bg-muted/50 dark:border-zinc-800",
+                    file && "border-blue-500 bg-blue-50/20 dark:bg-blue-900/10",
+                  )}
+                >
+                  <input
+                    {...getInputProps({
+                      accept: ".xlsx, .xls, .xlsb",
+                    })}
+                  />
+                  {file ? (
+                    <div className="flex flex-col items-center gap-2">
+                      <div className="w-12 h-12 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
+                        <FileSpreadsheet className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
+                      </div>
+                      <div>
+                        <p className="font-semibold text-sm text-foreground max-w-[240px] truncate">
+                          {file.name}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {(file.size / 1024 / 1024).toFixed(2)} MB
+                        </p>
+                      </div>
+                      <p className="text-xs text-blue-600 dark:text-blue-400 mt-2 hover:underline">
+                        Change file
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center gap-3 text-muted-foreground">
+                      <div className="w-12 h-12 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center">
+                        <UploadCloud className="w-6 h-6" />
+                      </div>
+                      <div>
+                        <p className="font-semibold text-xs text-foreground">
+                          Click to upload or drag and drop
+                        </p>
+                        <p className="text-[11px] mt-0.5">
+                          Excel file (.xlsx, .xls, .xlsb)
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* ACTIONS */}
+                <div className="flex items-center justify-between pt-1">
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setFile(null);
+                      setUploadStatus("idle");
+                      setUploadResult(null);
+                    }}
+                    disabled={!file || isUploading}
+                    className="py-3 px-4 rounded-lg text-xs"
+                  >
+                    Clear
+                  </Button>
+                  <Button
+                    onClick={handleUpload}
+                    disabled={!file || isUploading}
+                    className="py-3 px-4 rounded-lg text-xs font-semibold bg-blue-600 hover:bg-blue-700 text-white shadow-sm"
+                  >
+                    {isUploading ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin mr-1.5" />
+                        Uploading...
+                      </>
+                    ) : (
+                      <div className="flex items-center gap-1.5 font-semibold">
+                        <UploadCloud className="w-4 h-4" />
+                        <span>Upload & Store</span>
+                      </div>
+                    )}
+                  </Button>
+                </div>
+
+                {/* STATUS MESSAGES */}
+                {uploadStatus === "success" && uploadResult && (
+                  <div className="p-4 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-250 dark:border-emerald-900 flex gap-2 items-start text-xs shadow-sm">
+                    <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
+                    <div className="space-y-1">
+                      <h4 className="font-bold text-emerald-805 dark:text-emerald-300">
+                        Import Successful
+                      </h4>
+                      <p className="text-[11px] text-emerald-700 dark:text-emerald-400/80">
+                        {uploadResult.message}
+                      </p>
+                      <ul className="text-[10px] space-y-1 text-emerald-800 dark:text-emerald-400/70 list-disc list-inside">
+                        {Object.entries(uploadResult.details || {}).map(
+                          ([sheet, details]: [string, any]) => (
+                            <li key={sheet}>
+                              <span className="font-semibold">{sheet}</span> &rarr;{" "}
+                              <code>{details.table_name}</code> ({details.rows_inserted} rows)
+                            </li>
+                          ),
+                        )}
+                      </ul>
+                    </div>
                   </div>
                 )}
-              </Button>
+
+                {uploadStatus === "error" && uploadResult && (
+                  <div className="p-4 rounded-xl bg-red-50 dark:bg-red-950/30 border border-red-250 dark:border-red-900 flex gap-2 items-start text-xs shadow-sm">
+                    <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400 shrink-0 mt-0.5" />
+                    <div>
+                      <h4 className="font-bold text-red-800 dark:text-red-300">
+                        Import Failed
+                      </h4>
+                      <p className="text-[11px] text-red-700 dark:text-red-400/80 mt-0.5">
+                        {uploadResult.message || "File upload failed. Ensure server is active."}
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* SECTION 2: MONTHLY SALES DATA IMPORT */}
+          <div className="space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-700 flex items-center justify-center shadow-lg shadow-blue-500/20">
+                <UploadCloud className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <h2 className="text-xl font-bold tracking-tight text-foreground">
+                  Actual Sales Data Import (Monthly)
+                </h2>
+                <p className="text-muted-foreground text-xs mt-0.5">
+                  Populate date-based monthly sales records.
+                </p>
+              </div>
             </div>
 
-            {/* STATUS MESSAGES */}
-            {uploadStatus === "success" && uploadResult && (
-              <div className="p-5 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900 flex gap-3 items-start shadow-sm">
-                <CheckCircle2 className="w-6 h-6 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
-                <div className="space-y-2">
-                  <h4 className="font-bold text-emerald-800 dark:text-emerald-300 text-base">
-                    Import Successful
-                  </h4>
-                  <p className="text-sm text-emerald-700 dark:text-emerald-400/80">
-                    {uploadResult.message} Detailed tables processed:
-                  </p>
-                  <ul className="text-xs space-y-1.5 text-emerald-800/90 dark:text-emerald-400/70 list-disc list-inside">
-                    {Object.entries(uploadResult.details || {}).map(
-                      ([sheet, details]: [string, any]) => (
-                        <li key={sheet}>
-                          <span className="font-semibold">{sheet}</span> &rarr;
-                          Table{" "}
-                          <code className="bg-emerald-100/50 dark:bg-emerald-900/35 px-1.5 py-0.5 rounded">
-                            {details.table_name}
-                          </code>{" "}
-                          ({details.rows_inserted} rows,{" "}
-                          {details.columns.length} columns)
-                        </li>
-                      ),
+            <Card className="shadow-xl border border-white/60 dark:border-zinc-800 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-2xl">
+              <CardHeader className="pb-4">
+                <CardTitle className="text-lg">Import excel file</CardTitle>
+                <CardDescription className="text-xs">
+                  Select Context Details (Year & Month) to be appended to parsed sale-report rows.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-5">
+                {/* YEAR & MONTH SELECTORS */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3 bg-zinc-50 dark:bg-zinc-950 rounded-xl border border-zinc-150 dark:border-zinc-850">
+                  <div className="space-y-1">
+                    <label className="text-xs font-semibold text-zinc-650 dark:text-zinc-400">
+                      Sales Report Year
+                    </label>
+                    <Select
+                      value={year.toString()}
+                      onValueChange={(val) => setYear(parseInt(val))}
+                    >
+                      <SelectTrigger className="w-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg px-3 py-2 h-10 text-xs font-semibold outline-none text-left">
+                        <SelectValue placeholder="Select Year" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-card border border-border">
+                        <SelectItem value="2024">2024</SelectItem>
+                        <SelectItem value="2025">2025</SelectItem>
+                        <SelectItem value="2026">2026</SelectItem>
+                        <SelectItem value="2027">2027</SelectItem>
+                        <SelectItem value="2028">2028</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-xs font-semibold text-zinc-650 dark:text-zinc-400">
+                      Sales Report Month
+                    </label>
+                    <Select
+                      value={month}
+                      onValueChange={(val) => setMonth(val)}
+                    >
+                      <SelectTrigger className="w-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg px-3 py-2 h-10 text-xs font-semibold outline-none text-left">
+                        <SelectValue placeholder="Select Month" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-card border border-border">
+                        <SelectItem value="January">January</SelectItem>
+                        <SelectItem value="February">February</SelectItem>
+                        <SelectItem value="March">March</SelectItem>
+                        <SelectItem value="April">April</SelectItem>
+                        <SelectItem value="May">May</SelectItem>
+                        <SelectItem value="June">June</SelectItem>
+                        <SelectItem value="July">July</SelectItem>
+                        <SelectItem value="August">August</SelectItem>
+                        <SelectItem value="September">September</SelectItem>
+                        <SelectItem value="October">October</SelectItem>
+                        <SelectItem value="November">November</SelectItem>
+                        <SelectItem value="December">December</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                {/* DROPZONE */}
+                <div
+                  {...getRootPropsMonthly()}
+                  className={cn(
+                    "border-2 border-dashed rounded-xl p-8 flex flex-col items-center justify-center text-center cursor-pointer transition-all",
+                    isDragActiveMonthly
+                      ? "border-blue-500 bg-blue-50/55 dark:bg-blue-900/20"
+                      : "border-zinc-200 hover:border-blue-400 hover:bg-muted/50 dark:border-zinc-800",
+                    monthlyFile && "border-blue-500 bg-blue-50/20 dark:bg-blue-900/10",
+                  )}
+                >
+                  <input
+                    {...getInputPropsMonthly({
+                      accept: ".xlsx, .xls, .xlsb",
+                    })}
+                  />
+                  {monthlyFile ? (
+                    <div className="flex flex-col items-center gap-2">
+                      <div className="w-12 h-12 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
+                        <FileSpreadsheet className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
+                      </div>
+                      <div>
+                        <p className="font-semibold text-sm text-foreground max-w-[240px] truncate">
+                          {monthlyFile.name}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {(monthlyFile.size / 1024 / 1024).toFixed(2)} MB
+                        </p>
+                      </div>
+                      <p className="text-xs text-blue-600 dark:text-blue-400 mt-2 hover:underline">
+                        Change file
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center gap-3 text-muted-foreground">
+                      <div className="w-12 h-12 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center">
+                        <UploadCloud className="w-6 h-6" />
+                      </div>
+                      <div>
+                        <p className="font-semibold text-xs text-foreground">
+                          Click to upload or drag and drop
+                        </p>
+                        <p className="text-[11px] mt-0.5">
+                          Excel file (.xlsx, .xls, .xlsb)
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* ACTIONS */}
+                <div className="flex items-center justify-between pt-1">
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setMonthlyFile(null);
+                      setUploadStatusMonthly("idle");
+                      setUploadResultMonthly(null);
+                    }}
+                    disabled={!monthlyFile || isUploadingMonthly}
+                    className="py-3 px-4 rounded-lg text-xs"
+                  >
+                    Clear
+                  </Button>
+                  <Button
+                    onClick={handleUploadMonthly}
+                    disabled={!monthlyFile || isUploadingMonthly}
+                    className="py-3 px-4 rounded-lg text-xs font-semibold bg-blue-600 hover:bg-blue-700 text-white shadow-sm"
+                  >
+                    {isUploadingMonthly ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin mr-1.5" />
+                        Uploading...
+                      </>
+                    ) : (
+                      <div className="flex items-center gap-1.5 font-semibold">
+                        <UploadCloud className="w-4 h-4" />
+                        <span>Upload & Store</span>
+                      </div>
                     )}
-                  </ul>
+                  </Button>
                 </div>
-              </div>
-            )}
 
-            {uploadStatus === "error" && uploadResult && (
-              <div className="p-5 rounded-2xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900 flex gap-3 items-start shadow-sm">
-                <AlertCircle className="w-6 h-6 text-red-600 dark:text-red-400 shrink-0 mt-0.5" />
-                <div>
-                  <h4 className="font-bold text-red-800 dark:text-red-300 text-base">
-                    Import Failed
-                  </h4>
-                  <p className="text-sm text-red-700 dark:text-red-400/80 mt-1">
-                    {uploadResult.message ||
-                      "File upload failed. Ensure the server is running."}
-                  </p>
-                </div>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
+                {/* STATUS MESSAGES */}
+                {uploadStatusMonthly === "success" && uploadResultMonthly && (
+                  <div className="p-4 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-250 dark:border-emerald-900 flex gap-2 items-start text-xs shadow-sm">
+                    <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
+                    <div className="space-y-1">
+                      <h4 className="font-bold text-emerald-805 dark:text-emerald-300">
+                        Import Successful
+                      </h4>
+                      <p className="text-[11px] text-emerald-700 dark:text-emerald-400/80">
+                        {uploadResultMonthly.message}
+                      </p>
+                      <ul className="text-[10px] space-y-1 text-emerald-800 dark:text-emerald-400/70 list-disc list-inside">
+                        {Object.entries(uploadResultMonthly.details || {}).map(
+                          ([sheet, details]: [string, any]) => (
+                            <li key={sheet}>
+                              <span className="font-semibold">{sheet}</span> &rarr;{" "}
+                              <code>{details.table_name}</code> ({details.rows_inserted} rows)
+                            </li>
+                          ),
+                        )}
+                      </ul>
+                    </div>
+                  </div>
+                )}
 
-      <div className="max-w-3xl mx-auto space-y-6 pt-6">
-        {/* HEADER */}
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-700 flex items-center justify-center shadow-lg shadow-blue-500/20">
-            <UploadCloud className="w-5 h-5 text-white" />
+                {uploadStatusMonthly === "error" && uploadResultMonthly && (
+                  <div className="p-4 rounded-xl bg-red-50 dark:bg-red-950/30 border border-red-250 dark:border-red-900 flex gap-2 items-start text-xs shadow-sm">
+                    <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400 shrink-0 mt-0.5" />
+                    <div>
+                      <h4 className="font-bold text-red-805 dark:text-red-300">
+                        Import Failed
+                      </h4>
+                      <p className="text-[11px] text-red-700 dark:text-red-400/80 mt-0.5">
+                        {uploadResultMonthly.message || "File upload failed. Ensure server is active."}
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
           </div>
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight text-foreground">
-              Actual Sales Data Import (Monthly)
-            </h1>
-            <p className="text-muted-foreground mt-1 text-sm">
-              Upload dealer data spreadsheets (e.g. testData.xlsx) to populate
-              tables in PostgreSQL.
-            </p>
+
+          {/* SECTION 3: SALES TARGET DATA IMPORT */}
+          <div className="space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-650 to-blue-700 flex items-center justify-center shadow-lg shadow-indigo-500/20">
+                <UploadCloud className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <h2 className="text-xl font-bold tracking-tight text-foreground">
+                  Sales Target Data Import
+                </h2>
+                <p className="text-muted-foreground text-xs mt-0.5">
+                  Populate target metrics tables.
+                </p>
+              </div>
+            </div>
+
+            <Card className="shadow-xl border border-white/60 dark:border-zinc-800 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-2xl">
+              <CardHeader className="pb-4">
+                <CardTitle className="text-lg">Import excel file</CardTitle>
+                <CardDescription className="text-xs">
+                  Upload target metrics spreadsheet to populate target tables directly.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-5">
+                {/* DROPZONE */}
+                <div
+                  {...getRootPropsTarget()}
+                  className={cn(
+                    "border-2 border-dashed rounded-xl p-8 flex flex-col items-center justify-center text-center cursor-pointer transition-all",
+                    isDragActiveTarget
+                      ? "border-blue-500 bg-blue-50/55 dark:bg-blue-900/20"
+                      : "border-zinc-200 hover:border-blue-400 hover:bg-muted/50 dark:border-zinc-800",
+                    targetFile && "border-blue-500 bg-blue-50/20 dark:bg-blue-900/10",
+                  )}
+                >
+                  <input
+                    {...getInputPropsTarget({
+                      accept: ".xlsx, .xls, .xlsb",
+                    })}
+                  />
+                  {targetFile ? (
+                    <div className="flex flex-col items-center gap-2">
+                      <div className="w-12 h-12 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
+                        <FileSpreadsheet className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
+                      </div>
+                      <div>
+                        <p className="font-semibold text-sm text-foreground max-w-[240px] truncate">
+                          {targetFile.name}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {(targetFile.size / 1024 / 1024).toFixed(2)} MB
+                        </p>
+                      </div>
+                      <p className="text-xs text-blue-600 dark:text-blue-400 mt-1 hover:underline">
+                        Change file
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center gap-3 text-muted-foreground">
+                      <div className="w-12 h-12 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center">
+                        <UploadCloud className="w-6 h-6" />
+                      </div>
+                      <div>
+                        <p className="font-semibold text-xs text-foreground">
+                          Click to upload or drag and drop
+                        </p>
+                        <p className="text-[11px] mt-0.5">
+                          Excel file (.xlsx, .xls, .xlsb)
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* ACTIONS */}
+                <div className="flex items-center justify-between pt-1">
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setTargetFile(null);
+                      setUploadStatusTarget("idle");
+                      setUploadResultTarget(null);
+                    }}
+                    disabled={!targetFile || isUploadingTarget}
+                    className="py-3 px-4 rounded-lg text-xs"
+                  >
+                    Clear
+                  </Button>
+                  <Button
+                    onClick={handleUploadTarget}
+                    disabled={!targetFile || isUploadingTarget}
+                    className="py-3 px-4 rounded-lg text-xs font-semibold bg-blue-600 hover:bg-blue-700 text-white shadow-sm"
+                  >
+                    {isUploadingTarget ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin mr-1.5" />
+                        Uploading...
+                      </>
+                    ) : (
+                      <div className="flex items-center gap-1.5 font-semibold">
+                        <UploadCloud className="w-4 h-4" />
+                        <span>Upload & Store</span>
+                      </div>
+                    )}
+                  </Button>
+                </div>
+
+                {/* STATUS MESSAGES */}
+                {uploadStatusTarget === "success" && uploadResultTarget && (
+                  <div className="p-4 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-250 dark:border-emerald-900 flex gap-2 items-start text-xs shadow-sm">
+                    <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
+                    <div className="space-y-1">
+                      <h4 className="font-bold text-emerald-805 dark:text-emerald-300">
+                        Import Successful
+                      </h4>
+                      <p className="text-[11px] text-emerald-700 dark:text-emerald-400/80">
+                        {uploadResultTarget.message}
+                      </p>
+                      <ul className="text-[10px] space-y-1 text-emerald-800 dark:text-emerald-400/70 list-disc list-inside">
+                        {Object.entries(uploadResultTarget.details || {}).map(
+                          ([sheet, details]: [string, any]) => (
+                            <li key={sheet}>
+                              <span className="font-semibold">{sheet}</span> &rarr;{" "}
+                              <code>{details.table_name}</code> ({details.rows_inserted} rows)
+                            </li>
+                          ),
+                        )}
+                      </ul>
+                    </div>
+                  </div>
+                )}
+
+                {uploadStatusTarget === "error" && uploadResultTarget && (
+                  <div className="p-4 rounded-xl bg-red-50 dark:bg-red-950/30 border border-red-250 dark:border-red-900 flex gap-2 items-start text-xs shadow-sm">
+                    <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400 shrink-0 mt-0.5" />
+                    <div>
+                      <h4 className="font-bold text-red-805 dark:text-red-300">
+                        Import Failed
+                      </h4>
+                      <p className="text-[11px] text-red-700 dark:text-red-400/80 mt-0.5">
+                        {uploadResultTarget.message || "File upload failed. Ensure server is active."}
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
           </div>
         </div>
-
-        {/* DATA IMPORT CARD */}
-        <Card className="shadow-xl border border-white/60 dark:border-zinc-800 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-2xl">
-          <CardHeader>
-            <CardTitle className="text-xl">Import excel file</CardTitle>
-            <CardDescription className="text-sm mt-1">
-              Select the context details (Year & Quarter) below. They will be
-              appended automatically to the parsed `sale-report` data rows.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            {/* YEAR & QUARTER SELECTORS */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-zinc-50 dark:bg-zinc-950 rounded-2xl border border-zinc-150 dark:border-zinc-850">
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
-                  Sales Report Year
-                </label>
-                <Select
-                  value={year.toString()}
-                  onValueChange={(val) => setYear(parseInt(val))}
-                >
-                  <SelectTrigger className="w-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl px-4 py-3 h-12 text-sm font-semibold outline-none focus:ring-2 focus:ring-blue-500 transition-all text-left">
-                    <SelectValue placeholder="Select Year" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-card border border-border">
-                    <SelectItem value="2024">2024</SelectItem>
-                    <SelectItem value="2025">2025</SelectItem>
-                    <SelectItem value="2026">2026</SelectItem>
-                    <SelectItem value="2027">2027</SelectItem>
-                    <SelectItem value="2028">2028</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
-                  Sales Report Month
-                </label>
-                <Select
-                  value={month}
-                  onValueChange={(val) => setMonth(val)}
-                >
-                  <SelectTrigger className="w-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl px-4 py-3 h-12 text-sm font-semibold outline-none focus:ring-2 focus:ring-blue-500 transition-all text-left">
-                    <SelectValue placeholder="Select Month" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-card border border-border">
-                    <SelectItem value="January">January</SelectItem>
-                    <SelectItem value="February">February</SelectItem>
-                    <SelectItem value="March">March</SelectItem>
-                    <SelectItem value="April">April</SelectItem>
-                    <SelectItem value="May">May</SelectItem>
-                    <SelectItem value="June">June</SelectItem>
-                    <SelectItem value="July">July</SelectItem>
-                    <SelectItem value="August">August</SelectItem>
-                    <SelectItem value="September">September</SelectItem>
-                    <SelectItem value="October">October</SelectItem>
-                    <SelectItem value="November">November</SelectItem>
-                    <SelectItem value="December">December</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            {/* DROPZONE */}
-            <div
-              {...getRootPropsMonthly()}
-              className={cn(
-                "border-2 border-dashed rounded-2xl p-10 flex flex-col items-center justify-center text-center cursor-pointer transition-all",
-                isDragActiveMonthly
-                  ? "border-blue-500 bg-blue-50/55 dark:bg-blue-900/20"
-                  : "border-zinc-200 hover:border-blue-400 hover:bg-muted/50 dark:border-zinc-800",
-                monthlyFile && "border-blue-500 bg-blue-50/20 dark:bg-blue-900/10",
-              )}
-            >
-              <input
-                {...getInputPropsMonthly({
-                  accept: ".xlsx, .xls, .xlsb",
-                })}
-              />
-              {monthlyFile ? (
-                <div className="flex flex-col items-center gap-3">
-                  <div className="w-14 h-14 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
-                    <FileSpreadsheet className="w-7 h-7 text-emerald-600 dark:text-emerald-400" />
-                  </div>
-                  <div>
-                    <p className="font-semibold text-lg text-foreground">
-                      {monthlyFile.name}
-                    </p>
-                    <p className="text-sm text-muted-foreground mt-0.5">
-                      {(monthlyFile.size / 1024 / 1024).toFixed(2)} MB
-                    </p>
-                  </div>
-                  <p className="text-sm text-blue-600 dark:text-blue-400 mt-2 hover:underline">
-                    Click or drag to change monthlyFile
-                  </p>
-                </div>
-              ) : (
-                <div className="flex flex-col items-center gap-4 text-muted-foreground">
-                  <div className="w-14 h-14 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center">
-                    <UploadCloud className="w-7 h-7" />
-                  </div>
-                  <div>
-                    <p className="font-semibold text-base text-foreground">
-                      Click to upload or drag and drop
-                    </p>
-                    <p className="text-sm mt-0.5">
-                      Excel monthlyFile (.xlsx, .xls, .xlsb) with sheet structures
-                    </p>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* ACTIONS */}
-            <div className="flex items-center justify-between pt-2">
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setMonthlyFile(null);
-                  setUploadStatusMonthly("idle");
-                  setUploadResultMonthly(null);
-                }}
-                disabled={!monthlyFile || isUploadingMonthly}
-                className="py-5 px-6 rounded-xl font-medium"
-              >
-                Clear
-              </Button>
-              <Button
-                onClick={handleUploadMonthly}
-                disabled={!monthlyFile || isUploadingMonthly}
-                className="py-5 px-6 rounded-xl font-semibold bg-blue-600 hover:bg-blue-700 shadow-md shadow-blue-500/15"
-              >
-                {isUploadingMonthly ? (
-                  <>
-                    <Loader2 className="w-5 h-5 animate-spin mr-2" />
-                    Uploading & Parsing...
-                  </>
-                ) : (
-                  <div className="flex items-center gap-2 text-white font-semibold">
-                    <UploadCloud className="w-5 h-5" />
-                    <span>Upload & Store Data</span>
-                  </div>
-                )}
-              </Button>
-            </div>
-
-            {/* STATUS MESSAGES */}
-            {uploadStatusMonthly === "success" && uploadResultMonthly && (
-              <div className="p-5 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900 flex gap-3 items-start shadow-sm">
-                <CheckCircle2 className="w-6 h-6 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
-                <div className="space-y-2">
-                  <h4 className="font-bold text-emerald-800 dark:text-emerald-300 text-base">
-                    Import Successful
-                  </h4>
-                  <p className="text-sm text-emerald-700 dark:text-emerald-400/80">
-                    {uploadResultMonthly.message} Detailed tables processed:
-                  </p>
-                  <ul className="text-xs space-y-1.5 text-emerald-800/90 dark:text-emerald-400/70 list-disc list-inside">
-                    {Object.entries(uploadResultMonthly.details || {}).map(
-                      ([sheet, details]: [string, any]) => (
-                        <li key={sheet}>
-                          <span className="font-semibold">{sheet}</span> &rarr;
-                          Table{" "}
-                          <code className="bg-emerald-100/50 dark:bg-emerald-900/35 px-1.5 py-0.5 rounded">
-                            {details.table_name}
-                          </code>{" "}
-                          ({details.rows_inserted} rows,{" "}
-                          {details.columns.length} columns)
-                        </li>
-                      ),
-                    )}
-                  </ul>
-                </div>
-              </div>
-            )}
-
-            {uploadStatusMonthly === "error" && uploadResultMonthly && (
-              <div className="p-5 rounded-2xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900 flex gap-3 items-start shadow-sm">
-                <AlertCircle className="w-6 h-6 text-red-600 dark:text-red-400 shrink-0 mt-0.5" />
-                <div>
-                  <h4 className="font-bold text-red-800 dark:text-red-300 text-base">
-                    Import Failed
-                  </h4>
-                  <p className="text-sm text-red-700 dark:text-red-400/80 mt-1">
-                    {uploadResultMonthly.message ||
-                      "File upload failed. Ensure the server is running."}
-                  </p>
-                </div>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
-
-      <div className="max-w-3xl mx-auto space-y-6 pt-6">
-        {/* HEADER */}
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-600 to-blue-700 flex items-center justify-center shadow-lg shadow-indigo-500/20">
-            <UploadCloud className="w-5 h-5 text-white" />
-          </div>
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight text-foreground">
-              Sales Target Data Import
-            </h1>
-            <p className="text-muted-foreground mt-1 text-sm">
-              Upload target data spreadsheets (e.g. target_data.xlsx) to populate
-              tables in PostgreSQL.
-            </p>
-          </div>
-        </div>
-
-        {/* DATA IMPORT CARD */}
-        <Card className="shadow-xl border border-white/60 dark:border-zinc-800 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-2xl">
-          <CardHeader>
-            <CardTitle className="text-xl">Import excel file</CardTitle>
-            <CardDescription className="text-sm mt-1">
-              Upload your Target Data spreadsheet sheet to ingest target metrics directly.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            {/* DROPZONE */}
-            <div
-              {...getRootPropsTarget()}
-              className={cn(
-                "border-2 border-dashed rounded-2xl p-10 flex flex-col items-center justify-center text-center cursor-pointer transition-all",
-                isDragActiveTarget
-                  ? "border-blue-500 bg-blue-50/55 dark:bg-blue-900/20"
-                  : "border-zinc-200 hover:border-blue-400 hover:bg-muted/50 dark:border-zinc-800",
-                targetFile && "border-blue-500 bg-blue-50/20 dark:bg-blue-900/10",
-              )}
-            >
-              <input
-                {...getInputPropsTarget({
-                  accept: ".xlsx, .xls, .xlsb",
-                })}
-              />
-              {targetFile ? (
-                <div className="flex flex-col items-center gap-3">
-                  <div className="w-14 h-14 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
-                    <FileSpreadsheet className="w-7 h-7 text-emerald-600 dark:text-emerald-400" />
-                  </div>
-                  <div>
-                    <p className="font-semibold text-lg text-foreground">
-                      {targetFile.name}
-                    </p>
-                    <p className="text-sm text-muted-foreground mt-0.5">
-                      {(targetFile.size / 1024 / 1024).toFixed(2)} MB
-                    </p>
-                  </div>
-                  <p className="text-sm text-blue-600 dark:text-blue-400 mt-2 hover:underline">
-                    Click or drag to change file
-                  </p>
-                </div>
-              ) : (
-                <div className="flex flex-col items-center gap-4 text-muted-foreground">
-                  <div className="w-14 h-14 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center">
-                    <UploadCloud className="w-7 h-7" />
-                  </div>
-                  <div>
-                    <p className="font-semibold text-base text-foreground">
-                      Click to upload or drag and drop
-                    </p>
-                    <p className="text-sm mt-0.5">
-                      Excel targetFile (.xlsx, .xls, .xlsb) with sheet structures
-                    </p>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* ACTIONS */}
-            <div className="flex items-center justify-between pt-2">
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setTargetFile(null);
-                  setUploadStatusTarget("idle");
-                  setUploadResultTarget(null);
-                }}
-                disabled={!targetFile || isUploadingTarget}
-                className="py-5 px-6 rounded-xl font-medium"
-              >
-                Clear
-              </Button>
-              <Button
-                onClick={handleUploadTarget}
-                disabled={!targetFile || isUploadingTarget}
-                className="py-5 px-6 rounded-xl font-semibold bg-blue-600 hover:bg-blue-700 shadow-md shadow-blue-500/15"
-              >
-                {isUploadingTarget ? (
-                  <>
-                    <Loader2 className="w-5 h-5 animate-spin mr-2" />
-                    Uploading & Parsing...
-                  </>
-                ) : (
-                  <div className="flex items-center gap-2 text-white font-semibold">
-                    <UploadCloud className="w-5 h-5" />
-                    <span>Upload & Store Data</span>
-                  </div>
-                )}
-              </Button>
-            </div>
-
-            {/* STATUS MESSAGES */}
-            {uploadStatusTarget === "success" && uploadResultTarget && (
-              <div className="p-5 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900 flex gap-3 items-start shadow-sm">
-                <CheckCircle2 className="w-6 h-6 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
-                <div className="space-y-2">
-                  <h4 className="font-bold text-emerald-800 dark:text-emerald-300 text-base">
-                    Import Successful
-                  </h4>
-                  <p className="text-sm text-emerald-700 dark:text-emerald-400/80">
-                    {uploadResultTarget.message} Detailed tables processed:
-                  </p>
-                  <ul className="text-xs space-y-1.5 text-emerald-800/90 dark:text-emerald-400/70 list-disc list-inside">
-                    {Object.entries(uploadResultTarget.details || {}).map(
-                      ([sheet, details]: [string, any]) => (
-                        <li key={sheet}>
-                          <span className="font-semibold">{sheet}</span> &rarr;
-                          Table{" "}
-                          <code className="bg-emerald-100/50 dark:bg-emerald-900/35 px-1.5 py-0.5 rounded">
-                            {details.table_name}
-                          </code>{" "}
-                          ({details.rows_inserted} rows,{" "}
-                          {details.columns.length} columns)
-                        </li>
-                      ),
-                    )}
-                  </ul>
-                </div>
-              </div>
-            )}
-
-            {uploadStatusTarget === "error" && uploadResultTarget && (
-              <div className="p-5 rounded-2xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900 flex gap-3 items-start shadow-sm">
-                <AlertCircle className="w-6 h-6 text-red-600 dark:text-red-400 shrink-0 mt-0.5" />
-                <div>
-                  <h4 className="font-bold text-red-800 dark:text-red-300 text-base">
-                    Import Failed
-                  </h4>
-                  <p className="text-sm text-red-700 dark:text-red-400/80 mt-1">
-                    {uploadResultTarget.message ||
-                      "File upload failed. Ensure the server is running."}
-                  </p>
-                </div>
-              </div>
-            )}
-          </CardContent>
-        </Card>
       </div>
     </div>
   );
