@@ -42,6 +42,11 @@ export function Sidebar() {
       icon: Inbox,
     },
     {
+      name: "Sale Analysis",
+      href: "/sales-analysis",
+      icon: BarChart2,
+    },
+    {
       name: "Scheme Outcomes",
       href: "/outcomes",
       icon: BarChart2,

@@ -43,9 +43,11 @@ import { cn } from "@/lib/utils";
 interface DynamicDataTableProps {
   columns: string[];
   rows: any[];
+  getRowClassName?: (row: any) => string | undefined;
+  renderCell?: (col: string, val: any, row: any) => React.ReactNode;
 }
 
-export function DynamicDataTable({ columns, rows }: DynamicDataTableProps) {
+export function DynamicDataTable({ columns, rows, getRowClassName, renderCell }: DynamicDataTableProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [pageSize, setPageSize] = useState("10");
@@ -380,28 +382,49 @@ export function DynamicDataTable({ columns, rows }: DynamicDataTableProps) {
                   </TableCell>
                 </TableRow>
               ) : (
-                paginatedRows.map((row, idx) => (
-                  <TableRow key={idx} className="hover:bg-muted/40 transition-colors h-11 border-b border-border/40">
-                    {columns.map((col) => {
-                      if (hiddenColumns.includes(col)) return null;
-                      const val = row[col];
-                      const displayVal =
-                        val === null || val === undefined
-                          ? "-"
-                          : typeof val === "number"
-                          ? Number.isInteger(val)
-                            ? val.toString()
-                            : val.toFixed(2)
-                          : String(val);
+                paginatedRows.map((row, idx) => {
+                  const customRowClass = getRowClassName ? getRowClassName(row) : "";
+                  return (
+                    <TableRow
+                      key={idx}
+                      className={cn(
+                        "hover:bg-muted/40 transition-colors h-11 border-b border-border/40",
+                        customRowClass
+                      )}
+                    >
+                      {columns.map((col) => {
+                        if (hiddenColumns.includes(col)) return null;
+                        const val = row[col];
 
-                      return (
-                        <TableCell key={col} className="p-3 text-sm text-foreground/80 font-medium">
-                          {displayVal}
-                        </TableCell>
-                      );
-                    })}
-                  </TableRow>
-                ))
+                        if (renderCell) {
+                          const customCell = renderCell(col, val, row);
+                          if (customCell !== undefined && customCell !== null) {
+                            return (
+                              <TableCell key={col} className="p-3 text-sm font-medium">
+                                {customCell}
+                              </TableCell>
+                            );
+                          }
+                        }
+
+                        const displayVal =
+                          val === null || val === undefined
+                            ? "-"
+                            : typeof val === "number"
+                            ? Number.isInteger(val)
+                              ? val.toString()
+                              : val.toFixed(2)
+                            : String(val);
+
+                        return (
+                          <TableCell key={col} className="p-3 text-sm text-foreground/80 font-medium">
+                            {displayVal}
+                          </TableCell>
+                        );
+                      })}
+                    </TableRow>
+                  );
+                })
               )}
             </TableBody>
           </Table>
