@@ -5,6 +5,7 @@ import api from "@/app/lib/api";
 import { DynamicDataTable } from "@/components/dynamic-data-table";
 import { Card, CardContent, CardDescription, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   AlertCircle,
   AlertTriangle,
@@ -16,6 +17,11 @@ import {
   Loader2,
   RefreshCw,
   TrendingDown,
+  Search,
+  ArrowUp,
+  ArrowDown,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -39,6 +45,7 @@ export default function SalesAnalysisPage() {
   const [startPeriod, setStartPeriod] = useState<string>("");
   const [endPeriod, setEndPeriod] = useState<string>("");
   const [globalPeriods, setGlobalPeriods] = useState<Array<{ year: number; month: number; label: string; value: string }>>([]);
+  const [availableCategories, setAvailableCategories] = useState<string[]>([]);
 
   const fetchSalesAnalysis = async () => {
     try {
@@ -57,29 +64,15 @@ export default function SalesAnalysisPage() {
       const rawRows = res.data?.rows || [];
       const rawCols = res.data?.columns || [];
 
-      // Calculate achievement percentage for each row
-      const processedRows = rawRows.map((row: any) => {
-        const sales = Number(row.month_sales);
-        const target = Number(row.monthly_target);
-        const achievement =
-          !isNaN(sales) && !isNaN(target) && target > 0
-            ? (sales / target) * 100
-            : null;
-        return {
-          ...row,
-          achievement_pct: achievement,
-        };
-      });
-
-      const processedCols = rawCols.includes("achievement_pct")
-        ? rawCols
-        : [...rawCols, "achievement_pct"];
-
       setSalesAnalysisData({
         ...res.data,
-        columns: processedCols,
-        rows: processedRows,
+        columns: rawCols,
+        rows: rawRows,
       });
+
+      if (res.data?.available_categories) {
+        setAvailableCategories(res.data.available_categories);
+      }
 
       if (res.data?.periods && res.data.periods.length > 0) {
         setGlobalPeriods(res.data.periods);
@@ -147,10 +140,13 @@ export default function SalesAnalysisPage() {
   };
 
   const isBelowTarget = (row: any) => {
-    const sales = Number(row.month_sales);
-    const target = Number(row.monthly_target);
-    if (isNaN(sales) || isNaN(target) || target <= 0) return false;
-    return sales < 0.95 * target;
+    const categories = ["FL", "TL", "Ref", "AC"];
+    return categories.some((cat) => {
+      const sales = Number(row[`${cat}_month_sales`]);
+      const target = Number(row[`${cat}_monthly_target`]);
+      if (isNaN(sales) || isNaN(target) || target <= 0) return false;
+      return sales < 0.95 * target;
+    });
   };
 
   const underperformingCount = useMemo(() => {
@@ -173,50 +169,115 @@ export default function SalesAnalysisPage() {
     return "";
   };
 
-  const renderCell = (col: string, val: any, row: any) => {
-    if (col === "achievement_pct") {
-      if (val === null || val === undefined || isNaN(val)) {
+  // Custom Double-Header Table states & hooks
+  const [searchQuery, setSearchQuery] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [sortConfig, setSortConfig] = useState<{ key: string; direction: "asc" | "desc" | null }>({
+    key: "",
+    direction: null,
+  });
+
+  // Reset pagination when data changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [salesAnalysisData]);
+
+  const handleSort = (key: string) => {
+    setSortConfig((prev) => {
+      if (prev.key === key) {
+        if (prev.direction === "asc") return { key, direction: "desc" };
+        return { key: "", direction: null };
+      }
+      return { key, direction: "asc" };
+    });
+  };
+
+  const filteredRows = useMemo(() => {
+    let rows = displayRows;
+    if (searchQuery.trim() !== "") {
+      const q = searchQuery.toLowerCase();
+      rows = rows.filter((row: any) =>
+        String(row.sold_to_pt).toLowerCase().includes(q) ||
+        String(row.sold_party_name).toLowerCase().includes(q)
+      );
+    }
+    return rows;
+  }, [displayRows, searchQuery]);
+
+  const sortedRows = useMemo(() => {
+    if (!sortConfig.key || !sortConfig.direction) return filteredRows;
+    const { key, direction } = sortConfig;
+    const isAsc = direction === "asc";
+
+    return [...filteredRows].sort((a: any, b: any) => {
+      let aVal = a[key];
+      let bVal = b[key];
+
+      if (aVal === null || aVal === undefined) aVal = -Infinity;
+      if (bVal === null || bVal === undefined) bVal = -Infinity;
+
+      if (typeof aVal === "number" && typeof bVal === "number") {
+        return isAsc ? aVal - bVal : bVal - aVal;
+      }
+      return isAsc
+        ? String(aVal).localeCompare(String(bVal))
+        : String(bVal).localeCompare(String(aVal));
+    });
+  }, [filteredRows, sortConfig]);
+
+  const paginatedRows = useMemo(() => {
+    const start = (currentPage - 1) * pageSize;
+    return sortedRows.slice(start, start + pageSize);
+  }, [sortedRows, currentPage, pageSize]);
+
+  const totalPages = Math.ceil(sortedRows.length / pageSize) || 1;
+
+  const renderPivotedCell = (cat: string, field: string, val: any, row: any) => {
+    if (val === null || val === undefined) return <span className="text-muted-foreground">-</span>;
+
+    if (field === "achievement_pct") {
+      const isUnder = val < 95;
+      const target = Number(row[`${cat}_monthly_target`]);
+      if (target <= 0) {
         return <span className="text-muted-foreground">-</span>;
       }
-      const isUnder = val < 95;
       return (
         <span
           className={cn(
-            "inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold shadow-sm transition-colors",
+            "inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold shadow-sm",
             isUnder
               ? "bg-red-100 text-red-700 dark:bg-red-900/70 dark:text-red-300 border border-red-200 dark:border-red-800"
               : "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/70 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800"
           )}
         >
-          {isUnder ? (
-            <AlertTriangle className="h-3 w-3 text-red-600 dark:text-red-400 shrink-0" />
-          ) : (
-            <CheckCircle2 className="h-3 w-3 text-emerald-600 dark:text-emerald-400 shrink-0" />
-          )}
           {val.toFixed(1)}%
         </span>
       );
     }
 
-    if (col === "month_sales" || col === "monthly_target" || col === "quarter_target") {
-      if (val === null || val === undefined) return "-";
+    if (field === "scheme_percentage") {
+      if (val === 0) return <span className="text-muted-foreground">-</span>;
+      return <span className="font-semibold text-indigo-600 dark:text-indigo-400">{val.toFixed(1)}%</span>;
+    }
+
+    if (field === "last_year_fraction_of_quarter") {
+      return <span className="text-muted-foreground font-medium">{val.toFixed(3)}</span>;
+    }
+
+    if (["quarter_target", "monthly_target", "month_sales"].includes(field)) {
+      if (val === 0) return <span className="text-muted-foreground">-</span>;
       const numVal = Number(val);
-      if (isNaN(numVal)) return String(val);
+      const target = Number(row[`${cat}_monthly_target`]);
+      const isUnder = field === "month_sales" && target > 0 && numVal < 0.95 * target;
       return (
-        <span
-          className={cn(
-            "font-semibold",
-            col === "month_sales" && isBelowTarget(row)
-              ? "text-red-700 dark:text-red-300"
-              : "text-foreground"
-          )}
-        >
+        <span className={cn("font-semibold", isUnder ? "text-red-700 dark:text-red-400" : "text-foreground")}>
           {formatNumber(numVal)}
         </span>
       );
     }
 
-    return null;
+    return String(val);
   };
 
   return (
@@ -490,13 +551,204 @@ export default function SalesAnalysisPage() {
               </div>
             </div>
 
-            {/* DYNAMIC DATA TABLE */}
-            <DynamicDataTable
-              columns={salesAnalysisData.columns}
-              rows={displayRows}
-              getRowClassName={getRowClassName}
-              renderCell={renderCell}
-            />
+            {/* SEARCH AND PAGINATION TOOLBAR */}
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div className="relative w-full sm:max-w-xs">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/50" />
+                <Input
+                  placeholder="Search dealer code or name..."
+                  className="pl-10 h-10 bg-background shadow-sm rounded-xl"
+                  value={searchQuery}
+                  onChange={(e) => {
+                    setSearchQuery(e.target.value);
+                    setCurrentPage(1);
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* PIVOTED DOUBLE-HEADER TABLE */}
+            <Card className="shadow-lg border-border overflow-hidden bg-card/60 backdrop-blur-xl">
+              <div className="overflow-x-auto relative">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    {/* Header Row 1: Mapped Categories */}
+                    <tr className="border-b border-border bg-muted/30">
+                      <th rowSpan={2} className="p-3 text-xs font-semibold text-muted-foreground align-middle text-left min-w-[120px] border-r border-border/60">
+                        <div className="flex items-center gap-1.5 cursor-pointer hover:text-foreground" onClick={() => handleSort("sold_to_pt")}>
+                          <span>Dealer Code</span>
+                          {sortConfig.key === "sold_to_pt" && (sortConfig.direction === "asc" ? <ArrowUp className="w-3 h-3 text-blue-500" /> : <ArrowDown className="w-3 h-3 text-blue-500" />)}
+                        </div>
+                      </th>
+                      <th rowSpan={2} className="p-3 text-xs font-semibold text-muted-foreground align-middle text-left min-w-[200px] border-r border-border/60">
+                        <div className="flex items-center gap-1.5 cursor-pointer hover:text-foreground" onClick={() => handleSort("sold_party_name")}>
+                          <span>Dealer Name</span>
+                          {sortConfig.key === "sold_party_name" && (sortConfig.direction === "asc" ? <ArrowUp className="w-3 h-3 text-blue-500" /> : <ArrowDown className="w-3 h-3 text-blue-500" />)}
+                        </div>
+                      </th>
+                      
+                      {/* Dynamic Category Groups — only render categories with data */}
+                      {availableCategories.map((cat, i) => {
+                        const isLast = i === availableCategories.length - 1;
+                        const catMeta: Record<string, { label: string; color: string; bg: string }> = {
+                          FL: { label: "Front Load (FL)", color: "text-blue-600 dark:text-blue-400", bg: "bg-blue-50/40 dark:bg-blue-950/10" },
+                          TL: { label: "Top Load (TL)", color: "text-indigo-600 dark:text-indigo-400", bg: "bg-indigo-50/40 dark:bg-indigo-950/10" },
+                          Ref: { label: "Refrigerator (Ref)", color: "text-violet-600 dark:text-violet-400", bg: "bg-violet-50/40 dark:bg-violet-950/10" },
+                          AC: { label: "Air Conditioner (AC)", color: "text-teal-600 dark:text-teal-400", bg: "bg-teal-50/40 dark:bg-teal-950/10" },
+                        };
+                        const meta = catMeta[cat] ?? { label: cat, color: "", bg: "" };
+                        const colSpan = cat === "FL" ? 6 : 4;
+                        return (
+                          <th
+                            key={cat}
+                            colSpan={colSpan}
+                            className={cn(
+                              "p-2.5 text-xs font-bold text-center",
+                              meta.color, meta.bg,
+                              !isLast && "border-r border-border/80"
+                            )}
+                          >
+                            {meta.label}
+                          </th>
+                        );
+                      })}
+                    </tr>
+
+                    {/* Header Row 2: Sub-headers */}
+                    <tr className="border-b border-border bg-muted/15 text-[11px] text-muted-foreground font-semibold">
+                      {availableCategories.map((cat, i) => {
+                        const isLast = i === availableCategories.length - 1;
+                        const baseFields = ["quarter_target", "monthly_target", "month_sales", "achievement_pct"];
+                        const fields = cat === "FL"
+                          ? ["quarter_target", "monthly_target", "month_sales", "last_year_fraction_of_quarter", "achievement_pct", "scheme_percentage"]
+                          : baseFields;
+                        const fieldLabels: Record<string, string> = {
+                          quarter_target: "Qtr Target",
+                          monthly_target: "Mth Target",
+                          month_sales: "Actual Sales",
+                          last_year_fraction_of_quarter: "Fraction",
+                          achievement_pct: "Achieved %",
+                          scheme_percentage: "Scheme %",
+                        };
+                        return fields.map((field, fi) => {
+                          const isLastField = fi === fields.length - 1;
+                          return (
+                            <th
+                              key={`${cat}_${field}`}
+                              className={cn(
+                                "p-2 text-center cursor-pointer hover:text-foreground",
+                                isLastField && !isLast && "border-r border-border/80"
+                              )}
+                              onClick={() => handleSort(`${cat}_${field}`)}
+                            >
+                              {fieldLabels[field] ?? field}
+                            </th>
+                          );
+                        });
+                      })}
+                    </tr>
+                  </thead>
+
+                  <tbody>
+                    {paginatedRows.length === 0 ? (
+                      <tr>
+                        <td colSpan={2 + availableCategories.reduce((acc, cat) => acc + (cat === "FL" ? 6 : 4), 0)} className="h-48 text-center text-muted-foreground text-sm font-medium">
+                          No matching records found.
+                        </td>
+                      </tr>
+                    ) : (
+                      paginatedRows.map((row: any, idx: number) => {
+                        const customRowClass = getRowClassName ? getRowClassName(row) : "";
+                        return (
+                          <tr
+                            key={idx}
+                            className={cn(
+                              "hover:bg-muted/40 transition-colors border-b border-border/40 text-xs font-medium h-11",
+                              customRowClass
+                            )}
+                          >
+                            <td className="p-3 text-foreground/80 font-semibold border-r border-border/60">{row.sold_to_pt}</td>
+                            <td className="p-3 text-foreground/80 font-semibold border-r border-border/60">{row.sold_party_name}</td>
+
+                            {availableCategories.map((cat, i) => {
+                              const isLast = i === availableCategories.length - 1;
+                              const fields = cat === "FL"
+                                ? ["quarter_target", "monthly_target", "month_sales", "last_year_fraction_of_quarter", "achievement_pct", "scheme_percentage"]
+                                : ["quarter_target", "monthly_target", "month_sales", "achievement_pct"];
+                              return fields.map((field, fi) => {
+                                const isLastField = fi === fields.length - 1;
+                                const key = `${cat}_${field}`;
+                                return (
+                                  <td
+                                    key={key}
+                                    className={cn(
+                                      "p-2 text-center",
+                                      isLastField && !isLast && "border-r border-border/80"
+                                    )}
+                                  >
+                                    {renderPivotedCell(cat, field, row[key], row)}
+                                  </td>
+                                );
+                              });
+                            })}
+                          </tr>
+                        );
+                      })
+                    )}
+                  </tbody>
+                </table>
+              </div>
+              
+              {/* Pagination footer */}
+              <div className="border-t border-border bg-muted/30 px-6 py-4 flex flex-col sm:flex-row gap-4 sm:items-center sm:justify-between text-sm">
+                <div className="text-muted-foreground font-medium">
+                  Showing {filteredRows.length === 0 ? 0 : (currentPage - 1) * pageSize + 1}
+                  {" - "}
+                  {Math.min(currentPage * pageSize, filteredRows.length)} of {filteredRows.length} records
+                </div>
+                <div className="flex flex-wrap items-center gap-4">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-muted-foreground whitespace-nowrap font-medium">Rows per page</span>
+                    <select
+                      value={String(pageSize)}
+                      onChange={(e) => {
+                        setPageSize(Number(e.target.value));
+                        setCurrentPage(1);
+                      }}
+                      className="bg-card border border-border px-2.5 py-1.5 rounded-xl text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 font-semibold cursor-pointer"
+                    >
+                      <option value="10">10</option>
+                      <option value="25">25</option>
+                      <option value="50">50</option>
+                      <option value="100">100</option>
+                    </select>
+                  </div>
+                  <div className="flex items-center gap-2.5">
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      className="h-9 w-9 rounded-xl border-border bg-card"
+                      disabled={currentPage === 1}
+                      onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                    >
+                      <ChevronLeft className="w-4 h-4" />
+                    </Button>
+                    <div className="px-3 font-semibold min-w-[3.5rem] text-center">
+                      {currentPage} / {totalPages}
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      className="h-9 w-9 rounded-xl border-border bg-card"
+                      disabled={currentPage >= totalPages}
+                      onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                    >
+                      <ChevronRight className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </Card>
           </div>
         ) : (
           !error && (
