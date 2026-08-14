@@ -60,7 +60,7 @@ export default function SalesAnalysisPage() {
       }
 
       const res = await api.get("/import/sales-outcome", { params });
-      
+
       const rawRows = res.data?.rows || [];
       const rawCols = res.data?.columns || [];
 
@@ -88,7 +88,7 @@ export default function SalesAnalysisPage() {
       console.error(err);
       setError(
         err.response?.data?.detail ||
-          "Failed to load calculated sales analysis. Ensure the required data sheets are imported first."
+        "Failed to load calculated sales analysis. Ensure the required data sheets are imported first."
       );
       setSalesAnalysisData(null);
     } finally {
@@ -326,75 +326,75 @@ export default function SalesAnalysisPage() {
           </div>
         </div>
 
-      {/* CONTROLS BAR */}
-      <Card className="shadow-sm border-border bg-card">
-        <CardContent className="p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 w-full lg:w-auto">
-            <div className="flex flex-col gap-2.5">
-              <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1">
-                <Calendar className="w-3.5 h-3.5" />
-                Duration:
-              </span>
-              <div className="flex bg-muted/60 p-1 rounded-xl border border-border/60 flex-wrap gap-0.5">
-                {[
-                  { id: "all", label: "All Time" },
-                  { id: "1m", label: "1 Month" },
-                  { id: "3m", label: "3 Months" },
-                  { id: "6m", label: "6 Months" },
-                  { id: "12m", label: "12 Months" },
-                  { id: "custom", label: "Custom Range" },
-                ].map((item) => (
-                  <button
-                    key={item.id}
-                    onClick={() => setDuration(item.id as any)}
-                    className={cn(
-                      "text-xs px-3.5 py-1.5 rounded-lg font-medium transition-all",
-                      duration === item.id
-                        ? "bg-background text-foreground shadow-sm font-semibold"
-                        : "text-muted-foreground hover:text-foreground"
-                    )}
-                  >
-                    {item.label}
-                  </button>
-                ))}
+        {/* CONTROLS BAR */}
+        <Card className="shadow-sm border-border bg-card">
+          <CardContent className="p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 w-full lg:w-auto">
+              <div className="flex flex-col gap-2.5">
+                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1">
+                  <Calendar className="w-3.5 h-3.5" />
+                  Duration:
+                </span>
+                <div className="flex bg-muted/60 p-1 rounded-xl border border-border/60 flex-wrap gap-0.5">
+                  {[
+                    { id: "all", label: "All Time" },
+                    { id: "1m", label: "1 Month" },
+                    { id: "3m", label: "3 Months" },
+                    { id: "6m", label: "6 Months" },
+                    { id: "12m", label: "12 Months" },
+                    { id: "custom", label: "Custom Range" },
+                  ].map((item) => (
+                    <button
+                      key={item.id}
+                      onClick={() => setDuration(item.id as any)}
+                      className={cn(
+                        "text-xs px-3.5 py-1.5 rounded-lg font-medium transition-all",
+                        duration === item.id
+                          ? "bg-background text-foreground shadow-sm font-semibold"
+                          : "text-muted-foreground hover:text-foreground"
+                      )}
+                    >
+                      {item.label}
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
 
-            {duration === "custom" && globalPeriods.length > 0 && (
-              <div className="flex items-center gap-2 mt-4 sm:mt-6 animate-in fade-in slide-in-from-top-1 duration-200">
-                <div className="flex flex-col gap-1">
-                  <span className="text-[10px] font-semibold text-muted-foreground uppercase">From</span>
-                  <select
-                    value={startPeriod}
-                    onChange={(e) => setStartPeriod(e.target.value)}
-                    className="bg-muted/50 border border-border px-2.5 py-1.5 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 text-foreground cursor-pointer"
-                  >
-                    {[...globalPeriods].reverse().map((p) => (
-                      <option key={`from-${p.value}`} value={p.value}>
-                        {p.label}
-                      </option>
-                    ))}
-                  </select>
+              {duration === "custom" && globalPeriods.length > 0 && (
+                <div className="flex items-center gap-2 mt-4 sm:mt-6 animate-in fade-in slide-in-from-top-1 duration-200">
+                  <div className="flex flex-col gap-1">
+                    <span className="text-[10px] font-semibold text-muted-foreground uppercase">From</span>
+                    <select
+                      value={startPeriod}
+                      onChange={(e) => setStartPeriod(e.target.value)}
+                      className="bg-muted/50 border border-border px-2.5 py-1.5 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 text-foreground cursor-pointer"
+                    >
+                      {[...globalPeriods].reverse().map((p) => (
+                        <option key={`from-${p.value}`} value={p.value}>
+                          {p.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <span className="text-[10px] font-semibold text-muted-foreground uppercase">To</span>
+                    <select
+                      value={endPeriod}
+                      onChange={(e) => setEndPeriod(e.target.value)}
+                      className="bg-muted/50 border border-border px-2.5 py-1.5 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 text-foreground cursor-pointer"
+                    >
+                      {globalPeriods.map((p) => (
+                        <option key={`to-${p.value}`} value={p.value} disabled={p.value < startPeriod}>
+                          {p.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
-                <div className="flex flex-col gap-1">
-                  <span className="text-[10px] font-semibold text-muted-foreground uppercase">To</span>
-                  <select
-                    value={endPeriod}
-                    onChange={(e) => setEndPeriod(e.target.value)}
-                    className="bg-muted/50 border border-border px-2.5 py-1.5 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 text-foreground cursor-pointer"
-                  >
-                    {globalPeriods.map((p) => (
-                      <option key={`to-${p.value}`} value={p.value} disabled={p.value < startPeriod}>
-                        {p.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-            )}
-          </div>
-        </CardContent>
-      </Card>
+              )}
+            </div>
+          </CardContent>
+        </Card>
 
         {error && (
           <div className="flex gap-3 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm dark:border-red-900 dark:bg-red-950/50">
@@ -535,8 +535,8 @@ export default function SalesAnalysisPage() {
                   className={cn(
                     "h-8 rounded-lg text-xs font-semibold gap-1.5",
                     !showOnlyUnderperforming &&
-                      underperformingCount > 0 &&
-                      "border-red-300 text-red-700 hover:bg-red-50 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-950/40"
+                    underperformingCount > 0 &&
+                    "border-red-300 text-red-700 hover:bg-red-50 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-950/40"
                   )}
                 >
                   <AlertTriangle className="h-3.5 w-3.5" />
@@ -586,7 +586,7 @@ export default function SalesAnalysisPage() {
                           {sortConfig.key === "sold_party_name" && (sortConfig.direction === "asc" ? <ArrowUp className="w-3 h-3 text-blue-500" /> : <ArrowDown className="w-3 h-3 text-blue-500" />)}
                         </div>
                       </th>
-                      
+
                       {/* Dynamic Category Groups — only render categories with data */}
                       {availableCategories.map((cat, i) => {
                         const isLast = i === availableCategories.length - 1;
@@ -618,7 +618,7 @@ export default function SalesAnalysisPage() {
                     <tr className="border-b border-border bg-muted/15 text-[11px] text-muted-foreground font-semibold">
                       {availableCategories.map((cat, i) => {
                         const isLast = i === availableCategories.length - 1;
-                        const baseFields = ["quarter_target", "monthly_target", "month_sales", "achievement_pct"];
+                        const baseFields = ["quarter_target", "monthly_target", "month_sales", "last_year_fraction_of_quarter", "achievement_pct", "scheme_percentage"];
                         const fields = cat === "FL"
                           ? ["quarter_target", "monthly_target", "month_sales", "last_year_fraction_of_quarter", "achievement_pct", "scheme_percentage"]
                           : baseFields;
@@ -674,7 +674,7 @@ export default function SalesAnalysisPage() {
                               const isLast = i === availableCategories.length - 1;
                               const fields = cat === "FL"
                                 ? ["quarter_target", "monthly_target", "month_sales", "last_year_fraction_of_quarter", "achievement_pct", "scheme_percentage"]
-                                : ["quarter_target", "monthly_target", "month_sales", "achievement_pct"];
+                                : ["quarter_target", "monthly_target", "month_sales", "last_year_fraction_of_quarter", "achievement_pct", "scheme_percentage"];
                               return fields.map((field, fi) => {
                                 const isLastField = fi === fields.length - 1;
                                 const key = `${cat}_${field}`;
@@ -698,7 +698,7 @@ export default function SalesAnalysisPage() {
                   </tbody>
                 </table>
               </div>
-              
+
               {/* Pagination footer */}
               <div className="border-t border-border bg-muted/30 px-6 py-4 flex flex-col sm:flex-row gap-4 sm:items-center sm:justify-between text-sm">
                 <div className="text-muted-foreground font-medium">
