@@ -25,6 +25,7 @@ import {
   FileSpreadsheet,
   Loader2,
 } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
 
 export default function Home() {
@@ -38,6 +39,16 @@ export default function Home() {
   const [isUploading, setIsUploading] = useState(false);
   const [isUploadingMonthly, setIsUploadingMonthly] = useState(false);
   const [isUploadingTarget, setIsUploadingTarget] = useState(false);
+
+  const [uploadProgress, setUploadProgress] = useState<number>(0);
+  const [isProcessing, setIsProcessing] = useState<boolean>(false);
+
+  const [uploadProgressMonthly, setUploadProgressMonthly] = useState<number>(0);
+  const [isProcessingMonthly, setIsProcessingMonthly] = useState<boolean>(false);
+
+  const [uploadProgressTarget, setUploadProgressTarget] = useState<number>(0);
+  const [isProcessingTarget, setIsProcessingTarget] = useState<boolean>(false);
+
   const [uploadStatus, setUploadStatus] = useState<
     "idle" | "success" | "error"
   >("idle");
@@ -56,6 +67,8 @@ export default function Home() {
       setFile(acceptedFiles[0]);
       setUploadStatus("idle");
       setUploadResult(null);
+      setUploadProgress(0);
+      setIsProcessing(false);
     }
   }, []);
 
@@ -77,6 +90,8 @@ export default function Home() {
       setMonthlyFile(acceptedFiles[0]);
       setUploadStatusMonthly("idle");
       setUploadResultMonthly(null);
+      setUploadProgressMonthly(0);
+      setIsProcessingMonthly(false);
     }
   }, []);
 
@@ -101,6 +116,8 @@ export default function Home() {
     if (!file) return;
 
     setIsUploading(true);
+    setUploadProgress(0);
+    setIsProcessing(false);
     setUploadStatus("idle");
     setUploadResult(null);
 
@@ -110,7 +127,17 @@ export default function Home() {
     formData.append("quarter", quarter);
 
     try {
-      const res = await api.post(`/import/upload`, formData);
+      const res = await api.post(`/import/upload`, formData, {
+        onUploadProgress: (progressEvent) => {
+          if (progressEvent.total) {
+            const percent = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+            setUploadProgress(percent);
+            if (percent >= 100) {
+              setIsProcessing(true);
+            }
+          }
+        },
+      });
 
       setUploadResult(res.data);
       setUploadStatus("success");
@@ -124,6 +151,7 @@ export default function Home() {
       setUploadStatus("error");
     } finally {
       setIsUploading(false);
+      setIsProcessing(false);
     }
   };
 
@@ -131,6 +159,8 @@ export default function Home() {
     if (!monthlyFile) return;
 
     setIsUploadingMonthly(true);
+    setUploadProgressMonthly(0);
+    setIsProcessingMonthly(false);
     setUploadStatusMonthly("idle");
     setUploadResultMonthly(null);
 
@@ -140,7 +170,17 @@ export default function Home() {
     formData.append("month", month);
 
     try {
-      const res = await api.post(`/import/upload`, formData);
+      const res = await api.post(`/import/upload`, formData, {
+        onUploadProgress: (progressEvent) => {
+          if (progressEvent.total) {
+            const percent = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+            setUploadProgressMonthly(percent);
+            if (percent >= 100) {
+              setIsProcessingMonthly(true);
+            }
+          }
+        },
+      });
 
       setUploadResultMonthly(res.data);
       setUploadStatusMonthly("success");
@@ -154,6 +194,7 @@ export default function Home() {
       setUploadStatusMonthly("error");
     } finally {
       setIsUploadingMonthly(false);
+      setIsProcessingMonthly(false);
     }
   };
 
@@ -162,6 +203,8 @@ export default function Home() {
       setTargetFile(acceptedFiles[0]);
       setUploadStatusTarget("idle");
       setUploadResultTarget(null);
+      setUploadProgressTarget(0);
+      setIsProcessingTarget(false);
     }
   }, []);
 
@@ -186,6 +229,8 @@ export default function Home() {
     if (!targetFile) return;
 
     setIsUploadingTarget(true);
+    setUploadProgressTarget(0);
+    setIsProcessingTarget(false);
     setUploadStatusTarget("idle");
     setUploadResultTarget(null);
 
@@ -193,7 +238,17 @@ export default function Home() {
     formData.append("file", targetFile);
 
     try {
-      const res = await api.post(`/import/upload`, formData);
+      const res = await api.post(`/import/upload`, formData, {
+        onUploadProgress: (progressEvent) => {
+          if (progressEvent.total) {
+            const percent = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+            setUploadProgressTarget(percent);
+            if (percent >= 100) {
+              setIsProcessingTarget(true);
+            }
+          }
+        },
+      });
 
       setUploadResultTarget(res.data);
       setUploadStatusTarget("success");
@@ -207,8 +262,10 @@ export default function Home() {
       setUploadStatusTarget("error");
     } finally {
       setIsUploadingTarget(false);
+      setIsProcessingTarget(false);
     }
   };
+
 
   return (
     <div className="min-h-[calc(100vh-64px)] bg-gray-50/70 dark:bg-zinc-950 p-4 md:p-6 lg:p-8 font-sans">
@@ -348,6 +405,34 @@ export default function Home() {
                   )}
                 </div>
 
+                {/* UPLOAD PROGRESS BAR */}
+                {isUploading && (
+                  <div className="space-y-2 p-3 bg-blue-50/70 dark:bg-blue-950/40 rounded-xl border border-blue-200/80 dark:border-blue-800/50">
+                    <div className="flex justify-between items-center text-xs font-semibold text-blue-950 dark:text-blue-200">
+                      <span className="flex items-center gap-2">
+                        <Loader2 className="w-4 h-4 animate-spin text-blue-600 dark:text-blue-400" />
+                        {isProcessing
+                          ? "Processing & Streaming Records into Database..."
+                          : "Uploading File to Server..."}
+                      </span>
+                      <span className="font-mono">{uploadProgress}%</span>
+                    </div>
+                    <Progress value={uploadProgress} className="h-2.5" />
+                    <div className="flex justify-between text-[11px] text-muted-foreground">
+                      <span>
+                        {isProcessing
+                          ? "Executing high-speed PostgreSQL bulk COPY insert..."
+                          : file
+                          ? `${((file.size * (uploadProgress / 100)) / 1024 / 1024).toFixed(1)} MB / ${(file.size / 1024 / 1024).toFixed(1)} MB`
+                          : ""}
+                      </span>
+                      {uploadProgress < 100 && (
+                        <span>{uploadProgress}% transferred</span>
+                      )}
+                    </div>
+                  </div>
+                )}
+
                 {/* ACTIONS */}
                 <div className="flex items-center justify-between pt-1">
                   <Button
@@ -356,6 +441,8 @@ export default function Home() {
                       setFile(null);
                       setUploadStatus("idle");
                       setUploadResult(null);
+                      setUploadProgress(0);
+                      setIsProcessing(false);
                     }}
                     disabled={!file || isUploading}
                     className="py-3 px-4 rounded-lg text-xs"
@@ -370,7 +457,7 @@ export default function Home() {
                     {isUploading ? (
                       <>
                         <Loader2 className="w-4 h-4 animate-spin mr-1.5" />
-                        Uploading...
+                        {isProcessing ? "Inserting..." : "Uploading..."}
                       </>
                     ) : (
                       <div className="flex items-center gap-1.5 font-semibold">
@@ -549,6 +636,34 @@ export default function Home() {
                   )}
                 </div>
 
+                {/* UPLOAD PROGRESS BAR */}
+                {isUploadingMonthly && (
+                  <div className="space-y-2 p-3 bg-blue-50/70 dark:bg-blue-950/40 rounded-xl border border-blue-200/80 dark:border-blue-800/50">
+                    <div className="flex justify-between items-center text-xs font-semibold text-blue-950 dark:text-blue-200">
+                      <span className="flex items-center gap-2">
+                        <Loader2 className="w-4 h-4 animate-spin text-blue-600 dark:text-blue-400" />
+                        {isProcessingMonthly
+                          ? "Processing & Streaming Records into Database..."
+                          : "Uploading File to Server..."}
+                      </span>
+                      <span className="font-mono">{uploadProgressMonthly}%</span>
+                    </div>
+                    <Progress value={uploadProgressMonthly} className="h-2.5" />
+                    <div className="flex justify-between text-[11px] text-muted-foreground">
+                      <span>
+                        {isProcessingMonthly
+                          ? "Executing high-speed PostgreSQL bulk COPY insert..."
+                          : monthlyFile
+                          ? `${((monthlyFile.size * (uploadProgressMonthly / 100)) / 1024 / 1024).toFixed(1)} MB / ${(monthlyFile.size / 1024 / 1024).toFixed(1)} MB`
+                          : ""}
+                      </span>
+                      {uploadProgressMonthly < 100 && (
+                        <span>{uploadProgressMonthly}% transferred</span>
+                      )}
+                    </div>
+                  </div>
+                )}
+
                 {/* ACTIONS */}
                 <div className="flex items-center justify-between pt-1">
                   <Button
@@ -557,6 +672,8 @@ export default function Home() {
                       setMonthlyFile(null);
                       setUploadStatusMonthly("idle");
                       setUploadResultMonthly(null);
+                      setUploadProgressMonthly(0);
+                      setIsProcessingMonthly(false);
                     }}
                     disabled={!monthlyFile || isUploadingMonthly}
                     className="py-3 px-4 rounded-lg text-xs"
@@ -571,7 +688,7 @@ export default function Home() {
                     {isUploadingMonthly ? (
                       <>
                         <Loader2 className="w-4 h-4 animate-spin mr-1.5" />
-                        Uploading...
+                        {isProcessingMonthly ? "Inserting..." : "Uploading..."}
                       </>
                     ) : (
                       <div className="flex items-center gap-1.5 font-semibold">
@@ -698,6 +815,34 @@ export default function Home() {
                   )}
                 </div>
 
+                {/* UPLOAD PROGRESS BAR */}
+                {isUploadingTarget && (
+                  <div className="space-y-2 p-3 bg-blue-50/70 dark:bg-blue-950/40 rounded-xl border border-blue-200/80 dark:border-blue-800/50">
+                    <div className="flex justify-between items-center text-xs font-semibold text-blue-950 dark:text-blue-200">
+                      <span className="flex items-center gap-2">
+                        <Loader2 className="w-4 h-4 animate-spin text-blue-600 dark:text-blue-400" />
+                        {isProcessingTarget
+                          ? "Processing & Streaming Records into Database..."
+                          : "Uploading File to Server..."}
+                      </span>
+                      <span className="font-mono">{uploadProgressTarget}%</span>
+                    </div>
+                    <Progress value={uploadProgressTarget} className="h-2.5" />
+                    <div className="flex justify-between text-[11px] text-muted-foreground">
+                      <span>
+                        {isProcessingTarget
+                          ? "Executing high-speed PostgreSQL bulk COPY insert..."
+                          : targetFile
+                          ? `${((targetFile.size * (uploadProgressTarget / 100)) / 1024 / 1024).toFixed(1)} MB / ${(targetFile.size / 1024 / 1024).toFixed(1)} MB`
+                          : ""}
+                      </span>
+                      {uploadProgressTarget < 100 && (
+                        <span>{uploadProgressTarget}% transferred</span>
+                      )}
+                    </div>
+                  </div>
+                )}
+
                 {/* ACTIONS */}
                 <div className="flex items-center justify-between pt-1">
                   <Button
@@ -706,6 +851,8 @@ export default function Home() {
                       setTargetFile(null);
                       setUploadStatusTarget("idle");
                       setUploadResultTarget(null);
+                      setUploadProgressTarget(0);
+                      setIsProcessingTarget(false);
                     }}
                     disabled={!targetFile || isUploadingTarget}
                     className="py-3 px-4 rounded-lg text-xs"
@@ -720,7 +867,7 @@ export default function Home() {
                     {isUploadingTarget ? (
                       <>
                         <Loader2 className="w-4 h-4 animate-spin mr-1.5" />
-                        Uploading...
+                        {isProcessingTarget ? "Inserting..." : "Uploading..."}
                       </>
                     ) : (
                       <div className="flex items-center gap-1.5 font-semibold">
