@@ -98,7 +98,7 @@ export default function SalesAnalysisPage() {
 
   useEffect(() => {
     fetchSalesAnalysis();
-  }, [duration, startPeriod, endPeriod]);
+  }, [duration, duration === "custom" ? `${startPeriod}_${endPeriod}` : "default"]);
 
   const handleDownload = async () => {
     try {
